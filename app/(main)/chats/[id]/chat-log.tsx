@@ -102,7 +102,7 @@ function AssistantMessage({
                   V{version}
                 </div>
                 <div className="flex flex-col gap-0.5 text-left leading-none">
-                  <div className="text-sm font-medium leading-none text-bubblegumPink">
+                  <div className="text-sm font-medium leading-none text-plumPurple">
                     Generating...
                   </div>
                 </div>

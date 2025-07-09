@@ -50,6 +50,38 @@ export default function Home() {
 
   const [isPending, startTransition] = useTransition();
 
+  const [isStarting, setIsStarting] = useState(false);
+  const loadingMessages = [
+    "Coming up with a blueprint...",
+    "Writing code...",
+    "Deploying your app...",
+    "Almost done...",
+  ];
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (isStarting) {
+      setLoadingMessageIndex(0);
+      interval = setInterval(() => {
+        setLoadingMessageIndex((prev) => {
+          if (prev < loadingMessages.length - 1) {
+            return prev + 1;
+          } else {
+            // Stop at the last message
+            if (interval) clearInterval(interval);
+            return prev;
+          }
+        });
+      }, 7000); // 7 seconds
+    } else {
+      setLoadingMessageIndex(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isStarting]);
+
   const { uploadToS3 } = useS3Upload();
   const handleScreenshotUpload = async (event: any) => {
     if (prompt.length === 0) setPrompt("Build this");
@@ -188,39 +220,40 @@ export default function Home() {
           {/* Prompt Box */}
           <form
             className="relative z-20 mx-auto max-w-3xl"
-            action={async (formData) => {
-              startTransition(async () => {
-                const { prompt, model, quality } = Object.fromEntries(formData);
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setIsStarting(true);
+              const formData = new FormData(e.currentTarget);
+              const prompt = formData.get("prompt");
+              const model = formData.get("model");
+              const quality = formData.get("quality");
 
-                assert.ok(typeof prompt === "string");
-                assert.ok(typeof model === "string");
-                assert.ok(quality === "high" || quality === "low");
+              assert.ok(typeof prompt === "string");
+              assert.ok(typeof model === "string");
+              assert.ok(quality === "high" || quality === "low");
 
-                const { chatId, lastMessageId } = await createChat(
-                  prompt,
-                  model,
-                  quality,
-                  screenshotUrl,
-                );
+              const { chatId, lastMessageId } = await createChat(
+                prompt,
+                model,
+                quality,
+                screenshotUrl,
+              );
 
-                const streamPromise = fetch(
-                  "/api/get-next-completion-stream-promise",
-                  {
-                    method: "POST",
-                    body: JSON.stringify({ messageId: lastMessageId, model }),
-                  },
-                ).then((res) => {
-                  if (!res.body) {
-                    throw new Error("No body on response");
-                  }
-                  return res.body;
-                });
-
-                startTransition(() => {
-                  setStreamPromise(streamPromise);
-                  router.push(`/chats/${chatId}`);
-                });
+              const streamPromise = fetch(
+                "/api/get-next-completion-stream-promise",
+                {
+                  method: "POST",
+                  body: JSON.stringify({ messageId: lastMessageId, model }),
+                },
+              ).then((res) => {
+                if (!res.body) {
+                  throw new Error("No body on response");
+                }
+                return res.body;
               });
+
+              setStreamPromise(streamPromise);
+              router.push(`/chats/${chatId}`);
             }}
           >
             {/* Glow and heat distortion overlays behind prompt box */}
@@ -253,6 +286,15 @@ export default function Home() {
                     }
                   }}
                 />
+                {isStarting && (
+                  <div className="absolute inset-0 z-30 flex items-center justify-center rounded-xl bg-white px-1 py-3 md:px-3">
+                    <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
+                      <span className="animate-pulse text-balance text-center text-sm text-bubblegumPink md:text-base">
+                        {loadingMessages[loadingMessageIndex]}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 {/* Screenshot preview */}
                 {screenshotLoading && (
                   <div className="relative z-20 mx-3 mt-3">
@@ -415,9 +457,10 @@ export default function Home() {
                     type="submit"
                     className="flex items-center gap-3 rounded-2xl border-2 border-plumPurple bg-bubblegumPink px-8 py-4 font-heading text-xl font-bold text-plumPurple shadow-lg transition-all duration-200 hover:bg-lemonYellow hover:shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lemonYellow"
                     style={{ minWidth: 180 }}
+                    disabled={isStarting}
                   >
                     <LightningBoltIcon className="h-7 w-7 text-plumPurple" />
-                    Zapp it
+                    {isStarting ? "Starting..." : "Zapp it"}
                   </button>
                 </div>
               </div>
