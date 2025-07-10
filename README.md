@@ -53,9 +53,7 @@ We use the [Zora Coins SDK](https://docs.zora.co/coins/sdk) to mint ERC-20 token
 A glimpse of the Zappmint platform in action:
 
 <p align="center">
-  <img src="https://placehold.co/600x350?text=Dashboard+Screenshot" alt="Dashboard Screenshot" width="400"/>
-  <img src="https://placehold.co/600x350?text=Zapp+Creation+Flow" alt="Zapp Creation Flow" width="400"/>
-  <img src="https://placehold.co/600x350?text=App+Gallery" alt="App Gallery" width="400"/>
+  <img src="https://i.postimg.cc/7Yddz2j2/Screenshot-2025-07-10-at-10-39-04-PM.png" alt="Create Page" width="400"/>
+  <img src="https://i.postimg.cc/vH0927G4/Screenshot-2025-07-10-at-10-42-40-PM.png" alt="Zapp Creation Flow" width="400"/>
+  <img src="https://i.postimg.cc/rp1w3c5f/Screenshot-2025-07-10-at-10-43-27-PM.png" alt="Zapp Page" width="400"/>
 </p>
-
-Want your screenshot featured? Submit it here!
